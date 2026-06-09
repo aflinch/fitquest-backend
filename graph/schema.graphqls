@@ -1,0 +1,22 @@
+type User {
+  id: ID!
+  username: String!
+  level: Int!
+  experiencePoints: Int!
+}
+
+type Workout {
+  id: ID!
+  userId: ID!
+  activityType: String!
+  durationMinutes: Int!
+  xpEarned: Int!
+}
+
+type Query {
+  getUserProfile(id: ID!): User
+}
+
+type Mutation {
+  logWorkout(userId: ID!, activityType: String!, durationMinutes: Int!): Workout
+}
