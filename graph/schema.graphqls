@@ -1,22 +1,32 @@
+type Query {
+  # Query to get all master workout templates from Atlas
+  getWorkoutTemplates: [WorkoutTemplate!]!
+
+  # Query to get a single master template by its ID
+  getWorkoutTemplate(id: ID!): WorkoutTemplate
+}
+
+type Exercise {
+  name: String!
+  equipmentRequired: String!
+  primaryMuscle: String!
+}
+
+type WorkoutTemplate {
+  id: ID!
+  title: String!
+  category: String!
+  difficulty: String!
+  description: String!
+  targetMuscleGroups: [String!]!
+  exercises: [Exercise!]!
+  isCommunityTemplate: Boolean!
+}
+
+# Keeping your user schema placeholders intact for later feature expansion
 type User {
   id: ID!
   username: String!
   level: Int!
   experiencePoints: Int!
-}
-
-type Workout {
-  id: ID!
-  userId: ID!
-  activityType: String!
-  durationMinutes: Int!
-  xpEarned: Int!
-}
-
-type Query {
-  getUserProfile(id: ID!): User
-}
-
-type Mutation {
-  logWorkout(userId: ID!, activityType: String!, durationMinutes: Int!): Workout
 }

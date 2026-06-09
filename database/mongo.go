@@ -2,6 +2,8 @@ package database
 
 import (
 	"context"
+	"fmt"
+	"os"
 	"time"
 
 	"go.mongodb.org/mongo-driver/mongo"
@@ -12,8 +14,12 @@ func ConnectDB() (*mongo.Client, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	// Replace with your actual MongoDB URI string
-	client, err := mongo.Connect(ctx, options.Client().ApplyURI("mongodb://localhost:27017"))
+	uri := os.Getenv("MONGODB_URI")
+	if uri == "" {
+		return nil, fmt.Errorf("MONGODB_URI is not set")
+	}
+
+	client, err := mongo.Connect(ctx, options.Client().ApplyURI(uri))
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,10 @@
 
 package model
 
-type Mutation struct {
+type Exercise struct {
+	Name              string `json:"name"`
+	EquipmentRequired string `json:"equipmentRequired"`
+	PrimaryMuscle     string `json:"primaryMuscle"`
 }
 
 type Query struct {
@@ -15,10 +18,13 @@ type User struct {
 	ExperiencePoints int32  `json:"experiencePoints"`
 }
 
-type Workout struct {
-	ID              string `json:"id"`
-	UserID          string `json:"userId"`
-	ActivityType    string `json:"activityType"`
-	DurationMinutes int32  `json:"durationMinutes"`
-	XpEarned        int32  `json:"xpEarned"`
+type WorkoutTemplate struct {
+	ID                  string      `json:"id"`
+	Title               string      `json:"title"`
+	Category            string      `json:"category"`
+	Difficulty          string      `json:"difficulty"`
+	Description         string      `json:"description"`
+	TargetMuscleGroups  []string    `json:"targetMuscleGroups"`
+	Exercises           []*Exercise `json:"exercises"`
+	IsCommunityTemplate bool        `json:"isCommunityTemplate"`
 }

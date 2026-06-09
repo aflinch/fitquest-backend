@@ -11,36 +11,23 @@ import (
 	"fmt"
 )
 
-// LogWorkout is the resolver for the logWorkout field.
-func (r *mutationResolver) LogWorkout(ctx context.Context, userID string, activityType string, durationMinutes int32) (*model.Workout, error) {
-	panic(fmt.Errorf("not implemented: LogWorkout - logWorkout"))
+// GetWorkoutTemplates is the resolver for the getWorkoutTemplates query.
+func (r *queryResolver) GetWorkoutTemplates(ctx context.Context) ([]*model.WorkoutTemplate, error) {
+	return r.workoutTemplates, nil
 }
 
-// GetUserProfile is the resolver for the getUserProfile field.
-func (r *queryResolver) GetUserProfile(ctx context.Context, id string) (*model.User, error) {
-	panic(fmt.Errorf("not implemented: GetUserProfile - getUserProfile"))
-}
+// GetWorkoutTemplate is the resolver for the getWorkoutTemplate field.
+func (r *queryResolver) GetWorkoutTemplate(ctx context.Context, id string) (*model.WorkoutTemplate, error) {
+	for _, template := range r.workoutTemplates {
+		if template.ID == id {
+			return template, nil
+		}
+	}
 
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+	return nil, fmt.Errorf("workout template %q not found", id)
+}
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
-}
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
-}
-*/
