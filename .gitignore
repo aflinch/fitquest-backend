@@ -1,0 +1,9 @@
+text# Secrets
+.env
+
+# Binary files
+*.exe
+fitquest-backend
+
+# Dependencies
+vendor/

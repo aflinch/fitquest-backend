@@ -1,0 +1,20 @@
+type Query {
+  workouts: [Workout!]!
+}
+
+type Exercise {
+  name: String!
+  equipmentRequired: String!
+  primaryMuscle: String!
+}
+
+type Workout {
+  id: ID!
+  title: String!
+  category: String!
+  difficulty: String!
+  description: String!
+  targetMuscleGroups: [String!]!
+  exercises: [Exercise!]!
+  isCommunityTemplate: Boolean!
+}
