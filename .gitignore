@@ -1,4 +1,7 @@
-text# Secrets
+text# IDE
+.idea/
+
+# Secrets
 .env
 
 # Binary files

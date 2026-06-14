@@ -34,28 +34,9 @@ func (r *queryResolver) Workouts(ctx context.Context) ([]*model.Workout, error) 
 		return nil, err
 	}
 
-	// Map database structs to the generated GraphQL models
 	var gqlWorkouts []*model.Workout
 	for _, mw := range mongoWorkouts {
-		var exercises []*model.Exercise
-		for _, me := range mw.Exercises {
-			exercises = append(exercises, &model.Exercise{
-				Name:              me.Name,
-				EquipmentRequired: me.EquipmentRequired,
-				PrimaryMuscle:     me.PrimaryMuscle,
-			})
-		}
-
-		gqlWorkouts = append(gqlWorkouts, &model.Workout{
-			ID:                  mw.ID.Hex(),
-			Title:               mw.Title,
-			Category:            mw.Category,
-			Difficulty:          mw.Difficulty,
-			Description:         mw.Description,
-			TargetMuscleGroups:  mw.TargetMuscleGroups,
-			Exercises:           exercises,
-			IsCommunityTemplate: mw.IsCommunityTemplate,
-		})
+		gqlWorkouts = append(gqlWorkouts, mapMongoWorkoutToGQL(mw))
 	}
 
 	return gqlWorkouts, nil
