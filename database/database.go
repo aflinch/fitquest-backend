@@ -37,6 +37,5 @@ func ConnectDB() *mongo.Client {
 }
 
 func GetCollection(client *mongo.Client, collectionName string) *mongo.Collection {
-	// Replace "fitquest_db" with your preferred database name
 	return client.Database("fitquest").Collection(collectionName)
 }
