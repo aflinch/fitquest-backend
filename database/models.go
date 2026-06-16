@@ -2,6 +2,13 @@ package database
 
 import "go.mongodb.org/mongo-driver/bson/primitive"
 
+// MongoUser MongoUsers matches your exact BSON layout in Atlas
+type MongoUser struct {
+	ID           primitive.ObjectID `bson:"_id"`
+	Username     string             `bson:"username"`
+	PasswordHash string             `bson:"password_hash"`
+}
+
 // MongoExercise matches your exact BSON layout in Atlas
 type MongoExercise struct {
 	Name              string `bson:"name"`
