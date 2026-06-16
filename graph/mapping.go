@@ -5,6 +5,13 @@ import (
 	"fitquest-backend/graph/model"
 )
 
+func mapMongoUserToGQL(mu database.MongoUser) *model.User {
+	return &model.User{
+		ID:       mu.ID.Hex(),
+		Username: mu.Username,
+	}
+}
+
 func mapMongoWorkoutToGQL(mw database.MongoWorkout) *model.Workout {
 	exercises := make([]*model.Exercise, 0, len(mw.Exercises))
 	for _, me := range mw.Exercises {
