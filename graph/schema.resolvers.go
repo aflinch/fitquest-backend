@@ -9,10 +9,21 @@ import (
 	"context"
 	"fitquest-backend/database"
 	"fitquest-backend/graph/model"
+	"fmt"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
+
+// Register is the resolver for the register field.
+func (r *mutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
+	panic(fmt.Errorf("not implemented: Register - register"))
+}
+
+// Login is the resolver for the login field.
+func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
+	panic(fmt.Errorf("not implemented: Login - login"))
+}
 
 // Workouts is the resolver for the workouts field.
 func (r *queryResolver) Workouts(ctx context.Context) ([]*model.Workout, error) {
@@ -42,7 +53,11 @@ func (r *queryResolver) Workouts(ctx context.Context) ([]*model.Workout, error) 
 	return gqlWorkouts, nil
 }
 
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
+type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
