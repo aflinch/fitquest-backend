@@ -1,4 +1,4 @@
-package graph
+package users
 
 // This file will be automatically regenerated based on the schema, any resolver
 // implementations
@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fitquest-backend/auth"
 	"fitquest-backend/database"
+	"fitquest-backend/graph"
 	"fitquest-backend/graph/model"
 	jwtlib "fitquest-backend/jwt"
 	"log"
@@ -55,7 +56,7 @@ func (r *mutationResolver) Register(ctx context.Context, username string, passwo
 
 	return &model.AuthPayload{
 		Token: token,
-		User:  mapMongoUserToGQL(user),
+		User:  graph.mapMongoUserToGQL(user),
 	}, nil
 }
 
@@ -82,14 +83,14 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 	return &model.AuthPayload{
 		Token: token,
-		User:  mapMongoUserToGQL(user),
+		User:  graph.mapMongoUserToGQL(user),
 	}, nil
 }
 
 // Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+func (r *graph.Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
 
-type mutationResolver struct{ *Resolver }
+type mutationResolver struct{ *graph.Resolver }
 
 func RequireAuth(ctx context.Context) (*auth.UserCtx, error) {
 	user := auth.ForContext(ctx)

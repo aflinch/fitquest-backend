@@ -9,6 +9,7 @@ import (
 	"context"
 	"fitquest-backend/database"
 	"fitquest-backend/graph/model"
+	"fitquest-backend/graph/users"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,7 +17,7 @@ import (
 
 // GetExercises is the resolver for the getExercises field.
 func (r *queryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, error) {
-	if _, err := RequireAuth(ctx); err != nil {
+	if _, err := users.RequireAuth(ctx); err != nil {
 		return nil, err
 	}
 
