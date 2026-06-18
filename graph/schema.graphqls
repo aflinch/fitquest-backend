@@ -1,35 +1,12 @@
-type Mutation {
-  register(username: String!, password: String!): AuthPayload!
-  login(username: String!, password: String!): AuthPayload!
-}
-
 type Query {
-  workouts: [Workout!]!
+  getExercises: [Exercise!]
 }
 
 type Exercise {
+  id: ID!
   name: String!
-  equipmentRequired: String!
-  primaryMuscle: String!
-}
-
-type Workout {
-  id: ID!
-  title: String!
-  category: String!
-  difficulty: String!
-  description: String!
-  targetMuscleGroups: [String!]!
-  exercises: [Exercise!]!
-  isCommunityTemplate: Boolean!
-}
-
-type AuthPayload {
-  token: String!
-  user: User!
-}
-
-type User {
-  id: ID!
-  username: String!
+  category: String
+  mechanic: String
+  primaryMuscles: [String]
+  secondaryMuscles: [String]
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fitquest-backend/graph"
 	"log"
 	"net/http"
 	"os"
@@ -9,7 +10,6 @@ import (
 
 	"fitquest-backend/auth"
 	"fitquest-backend/database"
-	"fitquest-backend/graph"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

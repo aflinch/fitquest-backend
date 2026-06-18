@@ -8,45 +8,50 @@ package graph
 import (
 	"context"
 	"fitquest-backend/database"
+	"fitquest-backend/graph/helper"
 	"fitquest-backend/graph/model"
 	"log"
 
 	"go.mongodb.org/mongo-driver/bson"
 )
 
-// Workouts is the resolver for the workouts field.
-func (r *queryResolver) Workouts(ctx context.Context) ([]*model.Workout, error) {
-	// Access the "fitquest" database and "workouts" collection from MongoDB Atlas
-	collection := r.DB.Database("fitquest").Collection("workouts")
+// GetExercises is the resolver for the getExercises field.
+func (r *queryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, error) {
+	if _, err := RequireAuth(ctx); err != nil {
+		return nil, err
+	}
 
-	// Find all documents
+	collection := r.DB.Database("fitquest").Collection("exercises")
+
 	cursor, err := collection.Find(ctx, bson.M{})
 	if err != nil {
-		log.Printf("Error fetching workouts from MongoDB Atlas: %v", err)
+		log.Printf("Error fetching exercises: %v", err)
 		return nil, err
 	}
 	defer cursor.Close(ctx)
 
-	// Decode documents using the safe models in your database folder
-	var mongoWorkouts []database.MongoWorkout
-	if err = cursor.All(ctx, &mongoWorkouts); err != nil {
-		log.Printf("Error decoding workouts: %v", err)
+	var mongoExercises []database.MongoExercise
+	if err = cursor.All(ctx, &mongoExercises); err != nil {
+		log.Printf("Error decoding exercises: %v", err)
 		return nil, err
 	}
 
-	var gqlWorkouts []*model.Workout
-	for _, mw := range mongoWorkouts {
-		gqlWorkouts = append(gqlWorkouts, mapMongoWorkoutToGQL(mw))
+	var gqlExercises []*model.Exercise
+	for _, me := range mongoExercises {
+		gqlExercises = append(gqlExercises, &model.Exercise{
+			ID:               me.ID.Hex(),
+			Name:             me.Name,
+			Category:         &me.Category,
+			Mechanic:         &me.Mechanic,
+			PrimaryMuscles:   helper.ToPtrSlice(me.PrimaryMuscles),
+			SecondaryMuscles: helper.ToPtrSlice(me.SecondaryMuscles),
+		})
 	}
 
-	return gqlWorkouts, nil
+	return gqlExercises, nil
 }
-
-// Mutation returns MutationResolver implementation.
-func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
 
 // Query returns QueryResolver implementation.
 func (r *Resolver) Query() QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
