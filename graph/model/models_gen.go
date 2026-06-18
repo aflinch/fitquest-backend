@@ -2,13 +2,26 @@
 
 package model
 
+type AuthPayload struct {
+	Token string `json:"token"`
+	User  *User  `json:"user"`
+}
+
 type Exercise struct {
 	Name             string    `json:"name"`
 	Category         *string   `json:"category,omitempty"`
 	Mechanic         *string   `json:"mechanic,omitempty"`
-	PrimaryMuscles   []*string `json:"primary_muscles,omitempty"`
-	SecondaryMuscles []*string `json:"secondary_muscles,omitempty"`
+	PrimaryMuscles   []*string `json:"primaryMuscles,omitempty"`
+	SecondaryMuscles []*string `json:"secondaryMuscles,omitempty"`
+}
+
+type Mutation struct {
 }
 
 type Query struct {
+}
+
+type User struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
 }

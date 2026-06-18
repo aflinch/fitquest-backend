@@ -3,6 +3,7 @@ package graph
 import (
 	"context"
 	"errors"
+	"fitquest-backend/auth"
 	"fitquest-backend/database"
 	"fitquest-backend/graph/model"
 	jwtlib "fitquest-backend/jwt"
@@ -81,7 +82,22 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 	}, nil
 }
 
-// GetUserIdByUsername check if a user exists in database by given username
+// Mutation returns MutationResolver implementation.
+func (r *Resolver) Mutation() MutationResolver { return &mutationResolver{r} }
+
+type mutationResolver struct{ *Resolver }
+
+// RequireAuth checks if a user is authenticated and returns the user context or an error.
+// Call this at the start of any resolver that needs authentication.
+func RequireAuth(ctx context.Context) (*auth.UserCtx, error) {
+	user := auth.ForContext(ctx)
+	if user == nil {
+		return nil, errors.New("authentication required")
+	}
+	return user, nil
+}
+
+// GetUserIdByUsername checks if a user exists in database by given username.
 func GetUserIdByUsername(client *mongo.Client, ctx context.Context, username string) (string, error) {
 	collection := client.Database("fitquest").Collection("users")
 
