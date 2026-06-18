@@ -2,35 +2,13 @@
 
 package model
 
-type AuthPayload struct {
-	Token string `json:"token"`
-	User  *User  `json:"user"`
-}
-
 type Exercise struct {
-	Name              string `json:"name"`
-	EquipmentRequired string `json:"equipmentRequired"`
-	PrimaryMuscle     string `json:"primaryMuscle"`
-}
-
-type Mutation struct {
+	Name             string    `json:"name"`
+	Category         *string   `json:"category,omitempty"`
+	Mechanic         *string   `json:"mechanic,omitempty"`
+	PrimaryMuscles   []*string `json:"primary_muscles,omitempty"`
+	SecondaryMuscles []*string `json:"secondary_muscles,omitempty"`
 }
 
 type Query struct {
-}
-
-type User struct {
-	ID       string `json:"id"`
-	Username string `json:"username"`
-}
-
-type Workout struct {
-	ID                  string      `json:"id"`
-	Title               string      `json:"title"`
-	Category            string      `json:"category"`
-	Difficulty          string      `json:"difficulty"`
-	Description         string      `json:"description"`
-	TargetMuscleGroups  []string    `json:"targetMuscleGroups"`
-	Exercises           []*Exercise `json:"exercises"`
-	IsCommunityTemplate bool        `json:"isCommunityTemplate"`
 }
