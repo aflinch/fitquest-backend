@@ -19,16 +19,19 @@ Built with Go, [gqlgen](https://gqlgen.com/), MongoDB, and JWT authentication.
 ├── auth/               # HTTP middleware + context helpers for JWT auth
 ├── database/           # MongoDB connection and models
 ├── graph/              # GraphQL schema, resolvers, generated code
+│   ├── helper/         # Shared utility functions
+│   │   └── helpers.go
+│   ├── mapping/        # Mongo-to-GQL model mappers
+│   │   ├── mapping.go
+│   │   └── mapping_test.go
 │   ├── model/          # Generated GraphQL types
-│   ├── users/          # User mutations + schema
-│   │   ├── users.graphqls
-│   │   └── users.resolvers.go
+│   │   └── models_gen.go
 │   ├── generated.go    # Generated runtime (do not edit)
-│   ├── schema.graphqls # Exercise GraphQL schema
+│   ├── resolver.go     # Root Resolver struct
+│   ├── schema.graphqls # Exercise schema
 │   ├── schema.resolvers.go  # Exercise query resolvers
-│   ├── helpers.go      # Shared utility functions
-│   ├── mapping.go      # Mongo-to-GQL model mappers
-│   └── resolver.go     # Root Resolver struct
+│   ├── users.graphqls  # User schema types
+│   └── users.resolvers.go   # User mutation resolvers
 ├── jwt/                # JWT token generation and parsing
 ├── server.go           # Entry point
 ├── gqlgen.yml          # gqlgen configuration

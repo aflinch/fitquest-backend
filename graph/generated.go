@@ -262,7 +262,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema.graphqls" "users/users.graphqls"
+//go:embed "schema.graphqls" "users.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
