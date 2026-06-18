@@ -8,6 +8,7 @@ type AuthPayload struct {
 }
 
 type Exercise struct {
+	ID               string    `json:"id"`
 	Name             string    `json:"name"`
 	Category         *string   `json:"category,omitempty"`
 	Mechanic         *string   `json:"mechanic,omitempty"`

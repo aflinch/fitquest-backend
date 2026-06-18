@@ -38,6 +38,7 @@ func (r *queryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, er
 	var gqlExercises []*model.Exercise
 	for _, me := range mongoExercises {
 		gqlExercises = append(gqlExercises, &model.Exercise{
+			ID:               me.ID.Hex(),
 			Name:             me.Name,
 			Category:         &me.Category,
 			Mechanic:         &me.Mechanic,

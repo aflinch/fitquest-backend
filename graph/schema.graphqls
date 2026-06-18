@@ -3,6 +3,7 @@ type Query {
 }
 
 type Exercise {
+  id: ID!
   name: String!
   category: String
   mechanic: String

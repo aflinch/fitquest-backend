@@ -44,6 +44,7 @@ type ComplexityRoot struct {
 
 	Exercise struct {
 		Category         func(childComplexity int) int
+		ID               func(childComplexity int) int
 		Mechanic         func(childComplexity int) int
 		Name             func(childComplexity int) int
 		PrimaryMuscles   func(childComplexity int) int
@@ -106,6 +107,12 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 		}
 
 		return e.ComplexityRoot.Exercise.Category(childComplexity), true
+	case "Exercise.id":
+		if e.ComplexityRoot.Exercise.ID == nil {
+			break
+		}
+
+		return e.ComplexityRoot.Exercise.ID(childComplexity), true
 	case "Exercise.mechanic":
 		if e.ComplexityRoot.Exercise.Mechanic == nil {
 			break
@@ -288,6 +295,8 @@ func (ec *executionContext) childFields_AuthPayload(ctx context.Context, field g
 
 func (ec *executionContext) childFields_Exercise(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 	switch field.Name {
+	case "id":
+		return ec.fieldContext_Exercise_id(ctx, field)
 	case "name":
 		return ec.fieldContext_Exercise_name(ctx, field)
 	case "category":
@@ -605,6 +614,29 @@ func (ec *executionContext) fieldContext_AuthPayload_user(_ context.Context, fie
 	return fc, nil
 }
 
+func (ec *executionContext) _Exercise_id(ctx context.Context, field graphql.CollectedField, obj *model.Exercise) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Exercise_id(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			return obj.ID, nil
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v string) graphql.Marshaler {
+			return ec.marshalNID2string(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Exercise_id(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	return graphql.NewScalarFieldContext("Exercise", field, false, false, errors.New("field of type ID does not have child fields"))
+}
+
 func (ec *executionContext) _Exercise_name(ctx context.Context, field graphql.CollectedField, obj *model.Exercise) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -821,10 +853,10 @@ func (ec *executionContext) _Query_getExercises(ctx context.Context, field graph
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
-			return ec.marshalNExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx, selections, v)
+			return ec.marshalOExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx, selections, v)
 		},
 		true,
-		true,
+		false,
 	)
 }
 func (ec *executionContext) fieldContext_Query_getExercises(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -961,6 +993,7 @@ func (ec *executionContext) _User_username(ctx context.Context, field graphql.Co
 func (ec *executionContext) fieldContext_User_username(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	return graphql.NewScalarFieldContext("User", field, false, false, errors.New("field of type String does not have child fields"))
 }
+
 func (ec *executionContext) ___Directive_name(ctx context.Context, field graphql.CollectedField, obj *introspection.Directive) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
@@ -2083,6 +2116,11 @@ func (ec *executionContext) _Exercise(ctx context.Context, sel ast.SelectionSet,
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Exercise")
+		case "id":
+			out.Values[i] = ec._Exercise_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				out.Invalids++
+			}
 		case "name":
 			out.Values[i] = ec._Exercise_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
@@ -2197,16 +2235,13 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		case "getExercises":
 			field := field
 
-			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
+			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
 				defer func() {
 					if r := recover(); r != nil {
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
 				res = ec._Query_getExercises(ctx, field)
-				if res == graphql.Null {
-					atomic.AddUint32(&fs.Invalids, 1)
-				}
 				return res
 			}
 
@@ -2656,22 +2691,6 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) marshalNExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
-	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
-		fc := graphql.GetFieldContext(ctx)
-		fc.Result = &v[i]
-		return ec.marshalNExercise2ᚖfitquestᚑbackendᚋgraphᚋmodelᚐExercise(ctx, sel, v[i])
-	})
-
-	for _, e := range ret {
-		if e == graphql.Null {
-			return graphql.Null
-		}
-	}
-
-	return ret
-}
-
 func (ec *executionContext) marshalNExercise2ᚖfitquestᚑbackendᚋgraphᚋmodelᚐExercise(ctx context.Context, sel ast.SelectionSet, v *model.Exercise) graphql.Marshaler {
 	if v == nil {
 		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
@@ -2893,6 +2912,25 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	_ = ctx
 	res := graphql.MarshalBoolean(*v)
 	return res
+}
+
+func (ec *executionContext) marshalOExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx context.Context, sel ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := graphql.MarshalSliceConcurrently(ctx, len(v), 0, false, func(ctx context.Context, i int) graphql.Marshaler {
+		fc := graphql.GetFieldContext(ctx)
+		fc.Result = &v[i]
+		return ec.marshalNExercise2ᚖfitquestᚑbackendᚋgraphᚋmodelᚐExercise(ctx, sel, v[i])
+	})
+
+	for _, e := range ret {
+		if e == graphql.Null {
+			return graphql.Null
+		}
+	}
+
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
