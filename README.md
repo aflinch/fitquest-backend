@@ -2,7 +2,7 @@
 
 GraphQL API backend for FitQuest — a fitness exercise reference and workout tracking app.
 
-Built with Go, [gqlgen](https://gqlgen.com/), MongoDB, and JWT authentication.
+Built with Go, [gqlgen](https://gqlgen.com/), MongoDB, and JWT authentication. Resolvers depend on repository interfaces rather than the MongoDB driver directly, making them testable without a database connection.
 
 ## Tech Stack
 
@@ -16,25 +16,37 @@ Built with Go, [gqlgen](https://gqlgen.com/), MongoDB, and JWT authentication.
 
 ```
 .
-├── auth/               # HTTP middleware + context helpers for JWT auth
-├── database/           # MongoDB connection and models
-├── graph/              # GraphQL schema, resolvers, generated code
-│   ├── helper/         # Shared utility functions
+├── auth/                  # HTTP middleware + context helpers for JWT auth
+├── database/              # MongoDB connection, models, and repository layer
+│   ├── database.go        # DB connection
+│   ├── models.go          # BSON models
+│   └── repos.go           # Repository interfaces + Mongo implementations
+├── graph/                 # GraphQL schema, resolvers, generated code
+│   ├── generated.go       # Generated runtime (do not edit)
+│   ├── graphqls/          # Schema files by domain
+│   │   ├── exercises/
+│   │   │   └── exercises.graphqls
+│   │   └── users/
+│   │       └── users.graphqls
+│   ├── helper/            # Shared utility functions
 │   │   └── helpers.go
-│   ├── mapping/        # Mongo-to-GQL model mappers
+│   ├── mapping/           # Mongo-to-GQL model mappers
 │   │   ├── mapping.go
-│   │   └── mapping_test.go
-│   ├── model/          # Generated GraphQL types
+│   │   └── tests/
+│   │       └── mapping_test.go
+│   ├── model/             # Generated GraphQL types
 │   │   └── models_gen.go
-│   ├── generated.go    # Generated runtime (do not edit)
-│   ├── resolver.go     # Root Resolver struct
-│   ├── schema.graphqls # Exercise schema
-│   ├── schema.resolvers.go  # Exercise query resolvers
-│   ├── users.graphqls  # User schema types
-│   └── users.resolvers.go   # User mutation resolvers
-├── jwt/                # JWT token generation and parsing
-├── server.go           # Entry point
-├── gqlgen.yml          # gqlgen configuration
+│   └── resolvers/         # Resolver implementations
+│       ├── resolver.go    # Root Resolver struct (holds repo interfaces)
+│       ├── exercises.resolvers.go
+│       ├── users.resolvers.go
+│       └── tests/
+│           ├── exercises.resolvers_test.go
+│           └── users.resolvers_test.go
+├── jwt/                   # JWT token generation and parsing
+├── server.go              # Entry point
+├── gqlgen.yml             # gqlgen configuration
+├── .golangci.yml          # Linter config
 └── go.mod
 ```
 
@@ -135,15 +147,40 @@ query {
 }
 ```
 
+**getFilteredExercises** — List exercises filtered by muscle (requires auth):
+
+```graphql
+query {
+  getFilteredExercises(where: { muscle: "Chest" }) {
+    id
+    name
+    primaryMuscles
+    secondaryMuscles
+  }
+}
+```
+
 Pass the token as a `Bearer` header:
 
 ```json
 { "Authorization": "Bearer <token>" }
 ```
 
+## Testing
+
+```bash
+# Run all tests
+go test ./...
+
+# Run tests for a specific package
+go test ./graph/resolvers/tests/ -v
+```
+
+The resolver tests use repository interfaces to mock the database layer, so they run without a real MongoDB connection.
+
 ## Code Generation
 
-If you modify `graph/schema.graphqls`, regenerate the code:
+If you modify any `.graphqls` schema files, regenerate the code:
 
 ```bash
 go run github.com/99designs/gqlgen generate
