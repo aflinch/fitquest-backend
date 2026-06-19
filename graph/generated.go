@@ -262,7 +262,7 @@ func newExecutionContext(
 	}
 }
 
-//go:embed "schema.graphqls" "users.graphqls"
+//go:embed "schema.graphqls" "users/users.graphqls"
 var sourcesFS embed.FS
 
 func sourceData(filename string) string {
@@ -275,7 +275,7 @@ func sourceData(filename string) string {
 
 var sources = []*ast.Source{
 	{Name: "schema.graphqls", Input: sourceData("schema.graphqls"), BuiltIn: false},
-	{Name: "users.graphqls", Input: sourceData("users.graphqls"), BuiltIn: false},
+	{Name: "users.graphqls", Input: sourceData("users/users.graphqls"), BuiltIn: false},
 }
 var parsedSchema = gqlparser.MustLoadSchema(sources...)
 

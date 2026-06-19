@@ -2,11 +2,28 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"net/http"
 	"strings"
 
 	jwtlib "fitquest-backend/jwt"
 )
+
+type errorResponse struct {
+	Errors []struct {
+		Message string `json:"message"`
+	} `json:"errors"`
+}
+
+func writeGraphQLError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(errorResponse{
+		Errors: []struct {
+			Message string `json:"message"`
+		}{{Message: message}},
+	})
+}
 
 type contextKey struct {
 	name string
@@ -33,7 +50,7 @@ func Middleware() func(http.Handler) http.Handler {
 
 			claims, err := jwtlib.ParseToken(tokenStr)
 			if err != nil {
-				http.Error(w, "Invalid token", http.StatusForbidden)
+				writeGraphQLError(w, http.StatusForbidden, "Invalid token")
 				return
 			}
 
