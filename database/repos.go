@@ -2,6 +2,7 @@ package database
 
 import (
 	"context"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -44,10 +45,11 @@ func (r *mongoExerciseRepo) FindAll(ctx context.Context) ([]MongoExercise, error
 func (r *mongoExerciseRepo) FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error) {
 	filter := bson.M{}
 	if muscle != nil {
+		lowercaseMuscle := strings.ToLower(*muscle)
 		filter = bson.M{
 			"$or": []bson.M{
-				{"primary_muscles": bson.M{"$in": []string{*muscle}}},
-				{"secondary_muscles": bson.M{"$in": []string{*muscle}}},
+				{"primary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
+				{"secondary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
 			},
 		}
 	}
