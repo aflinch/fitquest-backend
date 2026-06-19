@@ -1,7 +1,8 @@
 package resolvers
 
-import "go.mongodb.org/mongo-driver/mongo"
+import "fitquest-backend/database"
 
 type Resolver struct {
-	DB *mongo.Client
+	Exercises database.ExerciseRepository
+	Users     database.UserRepository
 }

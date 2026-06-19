@@ -41,9 +41,12 @@ func main() {
 		}
 	}()
 
+	db := dbClient.Database("fitquest")
+
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
 		Resolvers: &resolvers.Resolver{
-			DB: dbClient,
+			Exercises: database.NewExerciseRepo(db),
+			Users:     database.NewUserRepo(db),
 		},
 	}))
 

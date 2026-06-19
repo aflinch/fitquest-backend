@@ -70,3 +70,7 @@ func ForContext(ctx context.Context) *UserCtx {
 	raw, _ := ctx.Value(userCtxKey).(*UserCtx)
 	return raw
 }
+
+func WithUserCtx(ctx context.Context, user *UserCtx) context.Context {
+	return context.WithValue(ctx, userCtxKey, user)
+}

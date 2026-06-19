@@ -15,18 +15,18 @@ import (
 	jwtlib "fitquest-backend/jwt"
 	"log"
 
-	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Register is the resolver for the register field.
-func (r *mutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	collection := r.DB.Database("fitquest").Collection("users")
-
-	var existing database.MongoUser
-	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&existing)
-	if err == nil {
+func (r *MutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
+	existing, err := r.Users.FindByUsername(ctx, username)
+	if err != nil {
+		log.Printf("Error checking existing user: %v", err)
+		return nil, err
+	}
+	if existing != nil {
 		return nil, errors.New("username already taken")
 	}
 
@@ -42,8 +42,7 @@ func (r *mutationResolver) Register(ctx context.Context, username string, passwo
 		PasswordHash: string(hash),
 	}
 
-	_, err = collection.InsertOne(ctx, user)
-	if err != nil {
+	if err := r.Users.Insert(ctx, user); err != nil {
 		log.Printf("Error inserting user: %v", err)
 		return nil, err
 	}
@@ -61,12 +60,13 @@ func (r *mutationResolver) Register(ctx context.Context, username string, passwo
 }
 
 // Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	collection := r.DB.Database("fitquest").Collection("users")
-
-	var user database.MongoUser
-	err := collection.FindOne(ctx, bson.M{"username": username}).Decode(&user)
+func (r *MutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
+	user, err := r.Users.FindByUsername(ctx, username)
 	if err != nil {
+		log.Printf("Error finding user: %v", err)
+		return nil, errors.New("invalid username or password")
+	}
+	if user == nil {
 		return nil, errors.New("invalid username or password")
 	}
 
@@ -83,11 +83,11 @@ func (r *mutationResolver) Login(ctx context.Context, username string, password 
 
 	return &model.AuthPayload{
 		Token: token,
-		User:  mapping.MapMongoUserToGQL(user),
+		User:  mapping.MapMongoUserToGQL(*user),
 	}, nil
 }
 
 // Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
+func (r *Resolver) Mutation() graph.MutationResolver { return &MutationResolver{r} }
 
-type mutationResolver struct{ *Resolver }
+type MutationResolver struct{ *Resolver }

@@ -9,110 +9,58 @@ import (
 	"context"
 	"errors"
 	"fitquest-backend/auth"
-	"fitquest-backend/database"
 	"fitquest-backend/graph"
-	"fitquest-backend/graph/helper"
+	"fitquest-backend/graph/mapping"
 	"fitquest-backend/graph/model"
-	"fmt"
-	"log"
-	"strings"
-
-	"go.mongodb.org/mongo-driver/bson"
 )
 
 // GetExercises is the resolver for the getExercises field.
-func (r *queryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, error) {
+func (r *QueryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, error) {
 	if _, err := requireAuth(ctx); err != nil {
 		return nil, err
 	}
 
-	collection := r.DB.Database("fitquest").Collection("exercises")
-
-	cursor, err := collection.Find(ctx, bson.M{})
+	mongoExercises, err := r.Exercises.FindAll(ctx)
 	if err != nil {
-		log.Printf("Error fetching exercises: %v", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var mongoExercises []database.MongoExercise
-	if err = cursor.All(ctx, &mongoExercises); err != nil {
-		log.Printf("Error decoding exercises: %v", err)
 		return nil, err
 	}
 
 	var gqlExercises []*model.Exercise
 	for _, me := range mongoExercises {
-		gqlExercises = append(gqlExercises, &model.Exercise{
-			ID:               me.ID.Hex(),
-			Name:             me.Name,
-			Category:         &me.Category,
-			Mechanic:         &me.Mechanic,
-			PrimaryMuscles:   helper.ToPtrSlice(me.PrimaryMuscles),
-			SecondaryMuscles: helper.ToPtrSlice(me.SecondaryMuscles),
-		})
+		gqlExercises = append(gqlExercises, mapping.MapMongoExerciseToGQL(me))
 	}
 
 	return gqlExercises, nil
 }
 
 // GetFilteredExercises is the resolver for the getFilteredExercises field.
-func (r *queryResolver) GetFilteredExercises(ctx context.Context, where *model.ExerciseFilter) ([]*model.Exercise, error) {
+func (r *QueryResolver) GetFilteredExercises(ctx context.Context, where *model.ExerciseFilter) ([]*model.Exercise, error) {
 	if _, err := requireAuth(ctx); err != nil {
 		return nil, err
 	}
 
-	collection := r.DB.Database("fitquest").Collection("exercises")
-
-	filter := bson.M{}
-
-	if where != nil && where.Muscle != nil {
-		lowercaseMuscle := strings.ToLower(*where.Muscle)
-
-		filter = bson.M{
-			"$or": []bson.M{
-				{"primary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
-				{"secondary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
-			},
-		}
+	var muscle *string
+	if where != nil {
+		muscle = where.Muscle
 	}
 
-	cursor, err := collection.Find(ctx, filter)
+	mongoExercises, err := r.Exercises.FindFiltered(ctx, muscle)
 	if err != nil {
-		log.Printf("Error fetching filtered exercises: %v", err)
-		return nil, err
-	}
-	defer cursor.Close(ctx)
-
-	var mongoExercises []database.MongoExercise
-	if err = cursor.All(ctx, &mongoExercises); err != nil {
-		log.Printf("Error decoding filtered exercises: %v", err)
 		return nil, err
 	}
 
 	var gqlExercises []*model.Exercise
 	for _, me := range mongoExercises {
-		gqlExercises = append(gqlExercises, &model.Exercise{
-			ID:               me.ID.Hex(),
-			Name:             me.Name,
-			Category:         &me.Category,
-			Mechanic:         &me.Mechanic,
-			PrimaryMuscles:   helper.ToPtrSlice(me.PrimaryMuscles),
-			SecondaryMuscles: helper.ToPtrSlice(me.SecondaryMuscles),
-		})
-	}
-
-	if len(gqlExercises) == 0 {
-		return nil, fmt.Errorf("no exercises found for the specified filter criteria")
+		gqlExercises = append(gqlExercises, mapping.MapMongoExerciseToGQL(me))
 	}
 
 	return gqlExercises, nil
 }
 
 // Query returns graph.QueryResolver implementation.
-func (r *Resolver) Query() graph.QueryResolver { return &queryResolver{r} }
+func (r *Resolver) Query() graph.QueryResolver { return &QueryResolver{r} }
 
-type queryResolver struct{ *Resolver }
+type QueryResolver struct{ *Resolver }
 
 func requireAuth(ctx context.Context) (*auth.UserCtx, error) {
 	user := auth.ForContext(ctx)
