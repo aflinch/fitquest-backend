@@ -2137,15 +2137,15 @@ func (ec *executionContext) unmarshalInputExerciseFilter(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"containsMuscle"}
+	fieldsInOrder := [...]string{"muscle"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
-		case "containsMuscle":
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("containsMuscle"))
+		case "muscle":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("muscle"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
 			if err != nil {
 				return it, err
