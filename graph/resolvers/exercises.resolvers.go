@@ -13,6 +13,7 @@ import (
 	"fitquest-backend/graph"
 	"fitquest-backend/graph/helper"
 	"fitquest-backend/graph/model"
+	"fmt"
 	"log"
 	"strings"
 
@@ -99,6 +100,10 @@ func (r *queryResolver) GetFilteredExercises(ctx context.Context, where *model.E
 			PrimaryMuscles:   helper.ToPtrSlice(me.PrimaryMuscles),
 			SecondaryMuscles: helper.ToPtrSlice(me.SecondaryMuscles),
 		})
+	}
+
+	if len(gqlExercises) == 0 {
+		return nil, fmt.Errorf("no exercises found for the specified filter criteria")
 	}
 
 	return gqlExercises, nil
