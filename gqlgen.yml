@@ -40,14 +40,14 @@ model:
 
 # Where should the resolver implementations go?
 resolver:
-  package: graph
+  package: resolvers
   layout: follow-schema # Only other option is "single-file."
 
   # Only for single-file layout:
   # filename: graph/resolver.go
 
   # Only for follow-schema layout:
-  dir: graph
+  dir: graph/resolvers
   filename_template: "{name}.resolvers.go"
 
   # Optional: turn on to not generate template comments above resolvers
@@ -55,9 +55,9 @@ resolver:
   # Optional: Pass in a path to a new gotpl template to use for generating resolvers
   # resolver_template: [your/path/resolver.gotpl]
   # Optional: turn on to avoid rewriting existing resolver(s) when generating
-  # preserve_resolver: false
+  # preserve_resolver: true
   # Optional: the name of the resolver struct type (default: Resolver)
-  # type: Resolver
+  type: Resolver
 
 # Optional: turn on use ` + "`" + `gqlgen:"fieldName"` + "`" + ` tags in your models
 # struct_tag: json

@@ -1,14 +1,15 @@
-package mapping
+package tests
 
 import (
 	"fitquest-backend/database"
+	"fitquest-backend/graph/mapping"
 	"testing"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func TestMapMongoUserToGQL_NotFound(t *testing.T) {
-	got := MapMongoUserToGQL(database.MongoUser{})
+	got := mapping.MapMongoUserToGQL(database.MongoUser{})
 
 	if got == nil {
 		t.Fatal("expected non-nil result")
@@ -28,7 +29,7 @@ func TestMapMongoUserToGQL(t *testing.T) {
 		PasswordHash: "hash",
 	}
 
-	got := MapMongoUserToGQL(mu)
+	got := mapping.MapMongoUserToGQL(mu)
 
 	if got.ID != mu.ID.Hex() {
 		t.Errorf("ID = %q, want %q", got.ID, mu.ID.Hex())
@@ -39,7 +40,7 @@ func TestMapMongoUserToGQL(t *testing.T) {
 }
 
 func TestMapMongoExerciseToGQL_Empty(t *testing.T) {
-	got := MapMongoExerciseToGQL(database.MongoExercise{})
+	got := mapping.MapMongoExerciseToGQL(database.MongoExercise{})
 
 	if got == nil {
 		t.Fatal("expected non-nil result")
@@ -74,7 +75,7 @@ func TestMapMongoExerciseToGQL(t *testing.T) {
 		SecondaryMuscles: []string{"Front Delts"},
 	}
 
-	got := MapMongoExerciseToGQL(me)
+	got := mapping.MapMongoExerciseToGQL(me)
 
 	if got.ID != me.ID.Hex() {
 		t.Errorf("ID = %q, want %q", got.ID, me.ID.Hex())

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fitquest-backend/graph"
+	"fitquest-backend/graph/resolvers"
 	"log"
 	"net/http"
 	"os"
@@ -40,9 +41,12 @@ func main() {
 		}
 	}()
 
+	db := dbClient.Database("fitquest")
+
 	srv := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{
-		Resolvers: &graph.Resolver{
-			DB: dbClient,
+		Resolvers: &resolvers.Resolver{
+			Exercises: database.NewExerciseRepo(db),
+			Users:     database.NewUserRepo(db),
 		},
 	}))
 
