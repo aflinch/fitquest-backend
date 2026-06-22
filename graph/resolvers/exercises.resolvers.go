@@ -9,6 +9,7 @@ import (
 	"context"
 	"errors"
 	"fitquest-backend/auth"
+	"fitquest-backend/database"
 	"fitquest-backend/graph"
 	"fitquest-backend/graph/mapping"
 	"fitquest-backend/graph/model"
@@ -16,13 +17,22 @@ import (
 
 // Exercises is the resolver for the exercises field.
 func (r *QueryResolver) Exercises(ctx context.Context, id *string) ([]*model.Exercise, error) {
+	var mongoExercises []database.MongoExercise
+	var err error
 	if _, err := requireAuth(ctx); err != nil {
 		return nil, err
 	}
 
-	mongoExercises, err := r.Resolver.Exercises.FindAll(ctx)
-	if err != nil {
-		return nil, err
+	if id == nil {
+		mongoExercises, err = r.Resolver.Exercises.FindAll(ctx)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		mongoExercises, err = r.Resolver.Exercises.FindById(ctx, id)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var gqlExercises []*model.Exercise

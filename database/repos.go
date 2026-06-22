@@ -2,14 +2,17 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type ExerciseRepository interface {
 	FindAll(ctx context.Context) ([]MongoExercise, error)
+	FindById(ctx context.Context, id *string) ([]MongoExercise, error)
 	FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error)
 }
 
@@ -28,6 +31,31 @@ func NewExerciseRepo(db *mongo.Database) ExerciseRepository {
 
 func (r *mongoExerciseRepo) FindAll(ctx context.Context) ([]MongoExercise, error) {
 	cursor, err := r.col.Find(ctx, bson.M{})
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var exercises []MongoExercise
+	if err := cursor.All(ctx, &exercises); err != nil {
+		return nil, err
+	}
+	return exercises, nil
+}
+
+func (r *mongoExerciseRepo) FindById(ctx context.Context, id *string) ([]MongoExercise, error) {
+	if id == nil {
+		return nil, fmt.Errorf("id cannot be nil")
+	}
+
+	objID, err := primitive.ObjectIDFromHex(*id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid id format: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+
+	cursor, err := r.col.Find(ctx, filter)
 	if err != nil {
 		return nil, err
 	}
