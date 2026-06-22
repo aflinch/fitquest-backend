@@ -1,9 +1,11 @@
 type Query {
-  getExercises: [Exercise!]
+  exercises(id: ID): [Exercise!]
 
-  getFilteredExercises(where: ExerciseFilter): [Exercise!]!
+  filteredExercises(where: ExerciseFilter!): [Exercise!]!
 }
+
 input ExerciseFilter {
+  ids: [ID]
   muscle: String
 }
 

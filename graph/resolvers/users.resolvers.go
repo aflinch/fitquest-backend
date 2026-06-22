@@ -58,8 +58,6 @@ func (r *MutationResolver) Register(ctx context.Context, username string, passwo
 		User:  mapping.MapMongoUserToGQL(user),
 	}, nil
 }
-
-// Login is the resolver for the login field.
 func (r *MutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
 	user, err := r.Users.FindByUsername(ctx, username)
 	if err != nil {

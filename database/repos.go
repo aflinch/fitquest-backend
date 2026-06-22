@@ -2,19 +2,20 @@ package database
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//go:generate go run github.com/vektra/mockery/v2 --name=ExerciseRepository --output=../graph/resolvers/mocks --outpkg=mocks
 type ExerciseRepository interface {
 	FindAll(ctx context.Context) ([]MongoExercise, error)
-	FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error)
+	FindById(ctx context.Context, id *string) ([]MongoExercise, error)
+	FindFiltered(ctx context.Context, muscle *string, ids []*string) ([]MongoExercise, error)
 }
 
-//go:generate go run github.com/vektra/mockery/v2 --name=UserRepository --output=../graph/resolvers/mocks --outpkg=mocks
 type UserRepository interface {
 	FindByUsername(ctx context.Context, username string) (*MongoUser, error)
 	Insert(ctx context.Context, user MongoUser) error
@@ -42,16 +43,63 @@ func (r *mongoExerciseRepo) FindAll(ctx context.Context) ([]MongoExercise, error
 	return exercises, nil
 }
 
-func (r *mongoExerciseRepo) FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error) {
-	filter := bson.M{}
+func (r *mongoExerciseRepo) FindById(ctx context.Context, id *string) ([]MongoExercise, error) {
+	if id == nil {
+		return nil, fmt.Errorf("id cannot be nil")
+	}
+
+	objID, err := primitive.ObjectIDFromHex(*id)
+	if err != nil {
+		return nil, fmt.Errorf("invalid id format: %v", err)
+	}
+
+	filter := bson.M{"_id": objID}
+
+	cursor, err := r.col.Find(ctx, filter)
+	if err != nil {
+		return nil, err
+	}
+	defer cursor.Close(ctx)
+
+	var exercises []MongoExercise
+	if err := cursor.All(ctx, &exercises); err != nil {
+		return nil, err
+	}
+	return exercises, nil
+}
+
+func (r *mongoExerciseRepo) FindFiltered(ctx context.Context, muscle *string, ids []*string) ([]MongoExercise, error) {
+	var objectIDs []primitive.ObjectID
+
+	for _, id := range ids {
+		objID, err := primitive.ObjectIDFromHex(*id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid id format: %v", err)
+		}
+		objectIDs = append(objectIDs, objID)
+	}
+
+	var orConditions []bson.M
+
 	if muscle != nil {
 		lowercaseMuscle := strings.ToLower(*muscle)
-		filter = bson.M{
+		orConditions = append(orConditions, bson.M{
 			"$or": []bson.M{
 				{"primary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
 				{"secondary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
 			},
-		}
+		})
+	}
+
+	if len(objectIDs) > 0 {
+		orConditions = append(orConditions, bson.M{
+			"_id": bson.M{"$in": objectIDs},
+		})
+	}
+
+	filter := bson.M{}
+	if len(orConditions) > 0 {
+		filter = bson.M{"$or": orConditions}
 	}
 
 	cursor, err := r.col.Find(ctx, filter)

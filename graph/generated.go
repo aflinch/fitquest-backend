@@ -57,8 +57,8 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		GetExercises         func(childComplexity int) int
-		GetFilteredExercises func(childComplexity int, where *model.ExerciseFilter) int
+		Exercises         func(childComplexity int, id *string) int
+		FilteredExercises func(childComplexity int, where model.ExerciseFilter) int
 	}
 
 	User struct {
@@ -72,8 +72,8 @@ type MutationResolver interface {
 	Login(ctx context.Context, username string, password string) (*model.AuthPayload, error)
 }
 type QueryResolver interface {
-	GetExercises(ctx context.Context) ([]*model.Exercise, error)
-	GetFilteredExercises(ctx context.Context, where *model.ExerciseFilter) ([]*model.Exercise, error)
+	Exercises(ctx context.Context, id *string) ([]*model.Exercise, error)
+	FilteredExercises(ctx context.Context, where model.ExerciseFilter) ([]*model.Exercise, error)
 }
 
 type executableSchema graphql.ExecutableSchemaState[ResolverRoot, DirectiveRoot, ComplexityRoot]
@@ -163,23 +163,28 @@ func (e *executableSchema) Complexity(ctx context.Context, typeName, field strin
 
 		return e.ComplexityRoot.Mutation.Register(childComplexity, args["username"].(string), args["password"].(string)), true
 
-	case "Query.getExercises":
-		if e.ComplexityRoot.Query.GetExercises == nil {
+	case "Query.exercises":
+		if e.ComplexityRoot.Query.Exercises == nil {
 			break
 		}
 
-		return e.ComplexityRoot.Query.GetExercises(childComplexity), true
-	case "Query.getFilteredExercises":
-		if e.ComplexityRoot.Query.GetFilteredExercises == nil {
-			break
-		}
-
-		args, err := ec.field_Query_getFilteredExercises_args(ctx, rawArgs)
+		args, err := ec.field_Query_exercises_args(ctx, rawArgs)
 		if err != nil {
 			return 0, false
 		}
 
-		return e.ComplexityRoot.Query.GetFilteredExercises(childComplexity, args["where"].(*model.ExerciseFilter)), true
+		return e.ComplexityRoot.Query.Exercises(childComplexity, args["id"].(*string)), true
+	case "Query.filteredExercises":
+		if e.ComplexityRoot.Query.FilteredExercises == nil {
+			break
+		}
+
+		args, err := ec.field_Query_filteredExercises_args(ctx, rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.ComplexityRoot.Query.FilteredExercises(childComplexity, args["where"].(model.ExerciseFilter)), true
 
 	case "User.id":
 		if e.ComplexityRoot.User.ID == nil {
@@ -510,12 +515,26 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 	return args, nil
 }
 
-func (ec *executionContext) field_Query_getFilteredExercises_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+func (ec *executionContext) field_Query_exercises_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
+	var err error
+	args := map[string]any{}
+	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "id",
+		func(ctx context.Context, v any) (*string, error) {
+			return ec.unmarshalOID2ᚖstring(ctx, v)
+		})
+	if err != nil {
+		return nil, err
+	}
+	args["id"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_filteredExercises_args(ctx context.Context, rawArgs map[string]any) (map[string]any, error) {
 	var err error
 	args := map[string]any{}
 	arg0, err := graphql.ProcessArgField(ctx, rawArgs, "where",
-		func(ctx context.Context, v any) (*model.ExerciseFilter, error) {
-			return ec.unmarshalOExerciseFilter2ᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseFilter(ctx, v)
+		func(ctx context.Context, v any) (model.ExerciseFilter, error) {
+			return ec.unmarshalNExerciseFilter2fitquestᚑbackendᚋgraphᚋmodelᚐExerciseFilter(ctx, v)
 		})
 	if err != nil {
 		return nil, err
@@ -869,16 +888,17 @@ func (ec *executionContext) fieldContext_Mutation_login(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _Query_getExercises(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+func (ec *executionContext) _Query_exercises(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	return graphql.ResolveField(
 		ctx,
 		ec.OperationContext,
 		field,
 		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_getExercises(ctx, field)
+			return ec.fieldContext_Query_exercises(ctx, field)
 		},
 		func(ctx context.Context) (any, error) {
-			return ec.Resolvers.Query().GetExercises(ctx)
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().Exercises(ctx, fc.Args["id"].(*string))
 		},
 		nil,
 		func(ctx context.Context, selections ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
@@ -888,40 +908,7 @@ func (ec *executionContext) _Query_getExercises(ctx context.Context, field graph
 		false,
 	)
 }
-func (ec *executionContext) fieldContext_Query_getExercises(_ context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "Query",
-		Field:      field,
-		IsMethod:   true,
-		IsResolver: true,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.childFields_Exercise(ctx, field)
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _Query_getFilteredExercises(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
-	return graphql.ResolveField(
-		ctx,
-		ec.OperationContext,
-		field,
-		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return ec.fieldContext_Query_getFilteredExercises(ctx, field)
-		},
-		func(ctx context.Context) (any, error) {
-			fc := graphql.GetFieldContext(ctx)
-			return ec.Resolvers.Query().GetFilteredExercises(ctx, fc.Args["where"].(*model.ExerciseFilter))
-		},
-		nil,
-		func(ctx context.Context, selections ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
-			return ec.marshalNExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx, selections, v)
-		},
-		true,
-		true,
-	)
-}
-func (ec *executionContext) fieldContext_Query_getFilteredExercises(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_Query_exercises(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "Query",
 		Field:      field,
@@ -938,7 +925,51 @@ func (ec *executionContext) fieldContext_Query_getFilteredExercises(ctx context.
 		}
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
-	if fc.Args, err = ec.field_Query_getFilteredExercises_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+	if fc.Args, err = ec.field_Query_exercises_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Query_filteredExercises(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	return graphql.ResolveField(
+		ctx,
+		ec.OperationContext,
+		field,
+		func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.fieldContext_Query_filteredExercises(ctx, field)
+		},
+		func(ctx context.Context) (any, error) {
+			fc := graphql.GetFieldContext(ctx)
+			return ec.Resolvers.Query().FilteredExercises(ctx, fc.Args["where"].(model.ExerciseFilter))
+		},
+		nil,
+		func(ctx context.Context, selections ast.SelectionSet, v []*model.Exercise) graphql.Marshaler {
+			return ec.marshalNExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseᚄ(ctx, selections, v)
+		},
+		true,
+		true,
+	)
+}
+func (ec *executionContext) fieldContext_Query_filteredExercises(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return ec.childFields_Exercise(ctx, field)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Query_filteredExercises_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2137,13 +2168,20 @@ func (ec *executionContext) unmarshalInputExerciseFilter(ctx context.Context, ob
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"muscle"}
+	fieldsInOrder := [...]string{"ids", "muscle"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
 			continue
 		}
 		switch k {
+		case "ids":
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("ids"))
+			data, err := ec.unmarshalOID2ᚕᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Ids = data
 		case "muscle":
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("muscle"))
 			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
@@ -2335,7 +2373,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
-		case "getExercises":
+		case "exercises":
 			field := field
 
 			innerFunc := func(ctx context.Context, _ *graphql.FieldSet) (res graphql.Marshaler) {
@@ -2344,7 +2382,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getExercises(ctx, field)
+				res = ec._Query_exercises(ctx, field)
 				return res
 			}
 
@@ -2354,7 +2392,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 			}
 
 			out.Concurrently(i, func(ctx context.Context) graphql.Marshaler { return rrm(innerCtx) })
-		case "getFilteredExercises":
+		case "filteredExercises":
 			field := field
 
 			innerFunc := func(ctx context.Context, fs *graphql.FieldSet) (res graphql.Marshaler) {
@@ -2363,7 +2401,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 						ec.Error(ctx, ec.Recover(ctx, r))
 					}
 				}()
-				res = ec._Query_getFilteredExercises(ctx, field)
+				res = ec._Query_filteredExercises(ctx, field)
 				if res == graphql.Null {
 					atomic.AddUint32(&fs.Invalids, 1)
 				}
@@ -2842,6 +2880,11 @@ func (ec *executionContext) marshalNExercise2ᚖfitquestᚑbackendᚋgraphᚋmod
 	return ec._Exercise(ctx, sel, v)
 }
 
+func (ec *executionContext) unmarshalNExerciseFilter2fitquestᚑbackendᚋgraphᚋmodelᚐExerciseFilter(ctx context.Context, v any) (model.ExerciseFilter, error) {
+	res, err := ec.unmarshalInputExerciseFilter(ctx, v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNID2string(ctx context.Context, v any) (string, error) {
 	res, err := graphql.UnmarshalID(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3074,12 +3117,52 @@ func (ec *executionContext) marshalOExercise2ᚕᚖfitquestᚑbackendᚋgraphᚋ
 	return ret
 }
 
-func (ec *executionContext) unmarshalOExerciseFilter2ᚖfitquestᚑbackendᚋgraphᚋmodelᚐExerciseFilter(ctx context.Context, v any) (*model.ExerciseFilter, error) {
+func (ec *executionContext) unmarshalOID2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
 	if v == nil {
 		return nil, nil
 	}
-	res, err := ec.unmarshalInputExerciseFilter(ctx, v)
+	var vSlice []any
+	vSlice = graphql.CoerceList(v)
+	var err error
+	res := make([]*string, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalOID2ᚖstring(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) marshalOID2ᚕᚖstring(ctx context.Context, sel ast.SelectionSet, v []*string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	for i := range v {
+		ret[i] = ec.marshalOID2ᚖstring(ctx, sel, v[i])
+	}
+
+	return ret
+}
+
+func (ec *executionContext) unmarshalOID2ᚖstring(ctx context.Context, v any) (*string, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalID(v)
 	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOID2ᚖstring(ctx context.Context, sel ast.SelectionSet, v *string) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	_ = sel
+	_ = ctx
+	res := graphql.MarshalID(*v)
+	return res
 }
 
 func (ec *executionContext) unmarshalOString2ᚕᚖstring(ctx context.Context, v any) ([]*string, error) {
