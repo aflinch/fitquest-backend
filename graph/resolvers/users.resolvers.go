@@ -7,34 +7,20 @@ package resolvers
 
 import (
 	"context"
+	"errors"
+	"fitquest-backend/database"
 	"fitquest-backend/graph"
+	"fitquest-backend/graph/mapping"
 	"fitquest-backend/graph/model"
-	"fmt"
+	jwtlib "fitquest-backend/jwt"
+	"log"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
+	"golang.org/x/crypto/bcrypt"
 )
 
 // Register is the resolver for the register field.
-func (r *mutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	panic(fmt.Errorf("not implemented: Register - register"))
-}
-
-// Login is the resolver for the login field.
-func (r *mutationResolver) Login(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
-	panic(fmt.Errorf("not implemented: Login - login"))
-}
-
-// Mutation returns graph.MutationResolver implementation.
-func (r *Resolver) Mutation() graph.MutationResolver { return &mutationResolver{r} }
-
-type mutationResolver struct{ *Resolver }
-
-// !!! WARNING !!!
-// The code below was going to be deleted when updating resolvers. It has been copied here so you have
-// one last chance to move it out of harms way if you want. There are two reasons this happens:
-//  - When renaming or deleting a resolver the old code will be put in here. You can safely delete
-//    it when you're done.
-//  - You have helper methods in this file. Move them out to keep these resolver files clean.
-/*
-	func (r *MutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
+func (r *MutationResolver) Register(ctx context.Context, username string, password string) (*model.AuthPayload, error) {
 	existing, err := r.Users.FindByUsername(ctx, username)
 	if err != nil {
 		log.Printf("Error checking existing user: %v", err)
@@ -98,5 +84,8 @@ func (r *MutationResolver) Login(ctx context.Context, username string, password 
 		User:  mapping.MapMongoUserToGQL(*user),
 	}, nil
 }
+
+// Mutation returns graph.MutationResolver implementation.
+func (r *Resolver) Mutation() graph.MutationResolver { return &MutationResolver{r} }
+
 type MutationResolver struct{ *Resolver }
-*/
