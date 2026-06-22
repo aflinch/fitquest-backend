@@ -17,7 +17,8 @@ type Exercise struct {
 }
 
 type ExerciseFilter struct {
-	Muscle *string `json:"muscle,omitempty"`
+	Ids    []*string `json:"ids,omitempty"`
+	Muscle *string   `json:"muscle,omitempty"`
 }
 
 type Mutation struct {

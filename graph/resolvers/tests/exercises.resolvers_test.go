@@ -32,7 +32,7 @@ func authContext() context.Context {
 	})
 }
 
-func TestGetExercises_AuthRequired(t *testing.T) {
+func TestExercises_AuthRequired(t *testing.T) {
 	r := &resolvers.QueryResolver{Resolver: &resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findAll: func(ctx context.Context) ([]database.MongoExercise, error) {
@@ -41,13 +41,13 @@ func TestGetExercises_AuthRequired(t *testing.T) {
 		},
 	}}
 
-	_, err := r.GetExercises(context.Background())
+	_, err := r.Exercises(context.Background(), nil)
 	if err == nil || err.Error() != "authentication required" {
 		t.Fatalf("expected auth error, got %v", err)
 	}
 }
 
-func TestGetExercises_Success(t *testing.T) {
+func TestExercises_Success(t *testing.T) {
 	expected := []database.MongoExercise{
 		{
 			ID:               primitive.NewObjectID(),
@@ -67,7 +67,7 @@ func TestGetExercises_Success(t *testing.T) {
 		},
 	}}
 
-	got, err := r.GetExercises(authContext())
+	got, err := r.Exercises(authContext(), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -83,7 +83,7 @@ func TestGetExercises_Success(t *testing.T) {
 	}
 }
 
-func TestGetExercises_Empty(t *testing.T) {
+func TestExercises_Empty(t *testing.T) {
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findAll: func(ctx context.Context) ([]database.MongoExercise, error) {
@@ -92,7 +92,7 @@ func TestGetExercises_Empty(t *testing.T) {
 		},
 	}}
 
-	got, err := r.GetExercises(authContext())
+	got, err := r.Exercises(authContext(), nil)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -102,7 +102,7 @@ func TestGetExercises_Empty(t *testing.T) {
 	}
 }
 
-func TestGetExercises_RepoError(t *testing.T) {
+func TestExercises_RepoError(t *testing.T) {
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findAll: func(ctx context.Context) ([]database.MongoExercise, error) {
@@ -111,13 +111,13 @@ func TestGetExercises_RepoError(t *testing.T) {
 		},
 	}}
 
-	_, err := r.GetExercises(authContext())
+	_, err := r.Exercises(authContext(), nil)
 	if err == nil || err.Error() != "db error" {
 		t.Fatalf("expected db error, got %v", err)
 	}
 }
 
-func TestGetFilteredExercises_AuthRequired(t *testing.T) {
+func TestFilteredExercises_AuthRequired(t *testing.T) {
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findFiltered: func(ctx context.Context, muscle *string) ([]database.MongoExercise, error) {
@@ -126,13 +126,13 @@ func TestGetFilteredExercises_AuthRequired(t *testing.T) {
 		},
 	}}
 
-	_, err := r.GetFilteredExercises(context.Background(), nil)
+	_, err := r.FilteredExercises(context.Background(), model.ExerciseFilter{})
 	if err == nil || err.Error() != "authentication required" {
 		t.Fatalf("expected auth error, got %v", err)
 	}
 }
 
-func TestGetFilteredExercises_NilWhere(t *testing.T) {
+func TestFilteredExercises_NilWhere(t *testing.T) {
 	var calledWith *string
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
@@ -145,7 +145,7 @@ func TestGetFilteredExercises_NilWhere(t *testing.T) {
 		},
 	}}
 
-	got, err := r.GetFilteredExercises(authContext(), nil)
+	got, err := r.FilteredExercises(authContext(), model.ExerciseFilter{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -158,7 +158,7 @@ func TestGetFilteredExercises_NilWhere(t *testing.T) {
 	}
 }
 
-func TestGetFilteredExercises_WithMuscle(t *testing.T) {
+func TestFilteredExercises_WithMuscle(t *testing.T) {
 	muscle := "Chest"
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
@@ -173,7 +173,7 @@ func TestGetFilteredExercises_WithMuscle(t *testing.T) {
 		},
 	}}
 
-	got, err := r.GetFilteredExercises(authContext(), &model.ExerciseFilter{Muscle: &muscle})
+	got, err := r.FilteredExercises(authContext(), model.ExerciseFilter{Muscle: &muscle})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -186,7 +186,7 @@ func TestGetFilteredExercises_WithMuscle(t *testing.T) {
 	}
 }
 
-func TestGetFilteredExercises_EmptyResult(t *testing.T) {
+func TestFilteredExercises_EmptyResult(t *testing.T) {
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findFiltered: func(ctx context.Context, muscle *string) ([]database.MongoExercise, error) {
@@ -195,7 +195,7 @@ func TestGetFilteredExercises_EmptyResult(t *testing.T) {
 		},
 	}}
 
-	got, err := r.GetFilteredExercises(authContext(), nil)
+	got, err := r.FilteredExercises(authContext(), model.ExerciseFilter{})
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
@@ -205,7 +205,7 @@ func TestGetFilteredExercises_EmptyResult(t *testing.T) {
 	}
 }
 
-func TestGetFilteredExercises_RepoError(t *testing.T) {
+func TestFilteredExercises_RepoError(t *testing.T) {
 	r := &resolvers.QueryResolver{&resolvers.Resolver{
 		Exercises: &mockExerciseRepo{
 			findFiltered: func(ctx context.Context, muscle *string) ([]database.MongoExercise, error) {
@@ -214,7 +214,7 @@ func TestGetFilteredExercises_RepoError(t *testing.T) {
 		},
 	}}
 
-	_, err := r.GetFilteredExercises(authContext(), nil)
+	_, err := r.FilteredExercises(authContext(), model.ExerciseFilter{})
 	if err == nil || err.Error() != "db error" {
 		t.Fatalf("expected db error, got %v", err)
 	}

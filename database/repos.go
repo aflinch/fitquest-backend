@@ -8,13 +8,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-//go:generate go run github.com/vektra/mockery/v2 --name=ExerciseRepository --output=../graph/resolvers/mocks --outpkg=mocks
 type ExerciseRepository interface {
 	FindAll(ctx context.Context) ([]MongoExercise, error)
 	FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error)
 }
 
-//go:generate go run github.com/vektra/mockery/v2 --name=UserRepository --output=../graph/resolvers/mocks --outpkg=mocks
 type UserRepository interface {
 	FindByUsername(ctx context.Context, username string) (*MongoUser, error)
 	Insert(ctx context.Context, user MongoUser) error

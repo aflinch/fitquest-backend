@@ -14,13 +14,13 @@ import (
 	"fitquest-backend/graph/model"
 )
 
-// GetExercises is the resolver for the getExercises field.
-func (r *QueryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, error) {
+// Exercises is the resolver for the exercises field.
+func (r *QueryResolver) Exercises(ctx context.Context, id *string) ([]*model.Exercise, error) {
 	if _, err := requireAuth(ctx); err != nil {
 		return nil, err
 	}
 
-	mongoExercises, err := r.Exercises.FindAll(ctx)
+	mongoExercises, err := r.Resolver.Exercises.FindAll(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -33,18 +33,18 @@ func (r *QueryResolver) GetExercises(ctx context.Context) ([]*model.Exercise, er
 	return gqlExercises, nil
 }
 
-// GetFilteredExercises is the resolver for the getFilteredExercises field.
-func (r *QueryResolver) GetFilteredExercises(ctx context.Context, where *model.ExerciseFilter) ([]*model.Exercise, error) {
+// FilteredExercises is the resolver for the filteredExercises field.
+func (r *QueryResolver) FilteredExercises(ctx context.Context, where model.ExerciseFilter) ([]*model.Exercise, error) {
 	if _, err := requireAuth(ctx); err != nil {
 		return nil, err
 	}
 
 	var muscle *string
-	if where != nil {
+	if where.Muscle != nil {
 		muscle = where.Muscle
 	}
 
-	mongoExercises, err := r.Exercises.FindFiltered(ctx, muscle)
+	mongoExercises, err := r.Resolver.Exercises.FindFiltered(ctx, muscle)
 	if err != nil {
 		return nil, err
 	}
@@ -56,11 +56,6 @@ func (r *QueryResolver) GetFilteredExercises(ctx context.Context, where *model.E
 
 	return gqlExercises, nil
 }
-
-// Query returns graph.QueryResolver implementation.
-func (r *Resolver) Query() graph.QueryResolver { return &QueryResolver{r} }
-
-type QueryResolver struct{ *Resolver }
 
 func requireAuth(ctx context.Context) (*auth.UserCtx, error) {
 	user := auth.ForContext(ctx)
@@ -69,3 +64,8 @@ func requireAuth(ctx context.Context) (*auth.UserCtx, error) {
 	}
 	return user, nil
 }
+
+// Query returns graph.QueryResolver implementation.
+func (r *Resolver) Query() graph.QueryResolver { return &QueryResolver{r} }
+
+type QueryResolver struct{ *Resolver }
