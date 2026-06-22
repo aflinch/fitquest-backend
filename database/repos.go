@@ -13,7 +13,7 @@ import (
 type ExerciseRepository interface {
 	FindAll(ctx context.Context) ([]MongoExercise, error)
 	FindById(ctx context.Context, id *string) ([]MongoExercise, error)
-	FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error)
+	FindFiltered(ctx context.Context, muscle *string, ids []*string) ([]MongoExercise, error)
 }
 
 type UserRepository interface {
@@ -68,16 +68,38 @@ func (r *mongoExerciseRepo) FindById(ctx context.Context, id *string) ([]MongoEx
 	return exercises, nil
 }
 
-func (r *mongoExerciseRepo) FindFiltered(ctx context.Context, muscle *string) ([]MongoExercise, error) {
-	filter := bson.M{}
+func (r *mongoExerciseRepo) FindFiltered(ctx context.Context, muscle *string, ids []*string) ([]MongoExercise, error) {
+	var objectIDs []primitive.ObjectID
+
+	for _, id := range ids {
+		objID, err := primitive.ObjectIDFromHex(*id)
+		if err != nil {
+			return nil, fmt.Errorf("invalid id format: %v", err)
+		}
+		objectIDs = append(objectIDs, objID)
+	}
+
+	var orConditions []bson.M
+
 	if muscle != nil {
 		lowercaseMuscle := strings.ToLower(*muscle)
-		filter = bson.M{
+		orConditions = append(orConditions, bson.M{
 			"$or": []bson.M{
 				{"primary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
 				{"secondary_muscles": bson.M{"$in": []string{lowercaseMuscle}}},
 			},
-		}
+		})
+	}
+
+	if len(objectIDs) > 0 {
+		orConditions = append(orConditions, bson.M{
+			"_id": bson.M{"$in": objectIDs},
+		})
+	}
+
+	filter := bson.M{}
+	if len(orConditions) > 0 {
+		filter = bson.M{"$or": orConditions}
 	}
 
 	cursor, err := r.col.Find(ctx, filter)

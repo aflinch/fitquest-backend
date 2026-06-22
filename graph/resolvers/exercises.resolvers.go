@@ -54,7 +54,12 @@ func (r *QueryResolver) FilteredExercises(ctx context.Context, where model.Exerc
 		muscle = where.Muscle
 	}
 
-	mongoExercises, err := r.Resolver.Exercises.FindFiltered(ctx, muscle)
+	var ids []*string
+	if where.Ids != nil {
+		ids = where.Ids
+	}
+
+	mongoExercises, err := r.Resolver.Exercises.FindFiltered(ctx, muscle, ids)
 	if err != nil {
 		return nil, err
 	}
